@@ -33,7 +33,7 @@ class RangeDatePicker extends StatefulWidget {
   /// The day indicated by [selectedRange] will be selected if provided.
   ///
   /// The optional [onRangeSelected] callback will be called if provided
-  /// when a range is selected.
+  /// when a single startDate is selected, and then again when the range is selected.
   ///
   /// The user interface provides a way to change the year and the month being
   /// displayed. By default it will show the day grid, but this can be changed
@@ -256,18 +256,21 @@ class RangeDatePicker extends StatefulWidget {
 
 class _RangeDatePickerState extends State<RangeDatePicker> {
   PickerType? _pickerType;
-  DateTime? _diplayedDate;
+  DateTime? _displayedDate;
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
 
   @override
   void initState() {
     _pickerType = widget.initialPickerType;
-    final clampedInitailDate = DateUtilsX.clampDateToRange(
-        max: widget.maxDate, min: widget.minDate, date: DateTime.now());
-    _diplayedDate =
-        DateUtils.dateOnly(widget.initialDate ?? clampedInitailDate);
+    final clampedInitailDate =
+        DateUtilsX.clampDateToRange(max: widget.maxDate, min: widget.minDate, date: DateTime.now());
+    _displayedDate = DateUtils.dateOnly(widget.initialDate ?? clampedInitailDate);
 
+    // if (widget.initialDate != null) {
+    //   _selectedStartDate = DateUtils.dateOnly(widget.initialDate!);
+    //   _selectedEndDate = DateUtils.dateOnly(widget.initialDate!);
+    // }
     if (widget.selectedRange != null) {
       _selectedStartDate = DateUtils.dateOnly(widget.selectedRange!.start);
       _selectedEndDate = DateUtils.dateOnly(widget.selectedRange!.end);
@@ -282,6 +285,11 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
       _pickerType = widget.initialPickerType;
     }
 
+    // if (widget.selectedRange == null) {
+    //   _selectedStartDate = null;
+    //   _selectedEndDate = null;
+    // }
+
     if (widget.selectedRange != oldWidget.selectedRange) {
       if (widget.selectedRange == null) {
         _selectedStartDate = null;
@@ -293,10 +301,9 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
     }
 
     if (widget.initialDate != oldWidget.initialDate) {
-      final clampedInitailDate = DateUtilsX.clampDateToRange(
-          max: widget.maxDate, min: widget.minDate, date: DateTime.now());
-      _diplayedDate =
-          DateUtils.dateOnly(widget.initialDate ?? clampedInitailDate);
+      final clampedInitailDate =
+          DateUtilsX.clampDateToRange(max: widget.maxDate, min: widget.minDate, date: DateTime.now());
+      _displayedDate = DateUtils.dateOnly(widget.initialDate ?? clampedInitailDate);
     }
 
     super.didUpdateWidget(oldWidget);
@@ -310,9 +317,8 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
           padding: widget.padding,
           child: RangeDaysPicker(
             centerLeadingDate: widget.centerLeadingDate,
-            currentDate:
-                DateUtils.dateOnly(widget.currentDate ?? DateTime.now()),
-            initialDate: _diplayedDate,
+            currentDate: DateUtils.dateOnly(widget.currentDate ?? DateTime.now()),
+            initialDate: _displayedDate,
             selectedEndDate: _selectedEndDate,
             selectedStartDate: _selectedStartDate,
             maxDate: DateUtils.dateOnly(widget.maxDate),
@@ -356,7 +362,13 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
                 );
               }
             },
+            // call the onRangeSelected callback when just the start date is selected
+            // this is to allow the user to optionally select a single date as the "Range"
             onStartDateChanged: (date) {
+              widget.onRangeSelected?.call(DateTimeRange(
+                start: date,
+                end: date,
+              ));
               setState(() {
                 _selectedStartDate = date;
                 _selectedEndDate = null;
@@ -369,12 +381,11 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
           padding: widget.padding,
           child: MonthPicker(
             centerLeadingDate: widget.centerLeadingDate,
-            initialDate: _diplayedDate,
+            initialDate: _displayedDate,
             selectedDate: null,
             maxDate: DateUtils.dateOnly(widget.maxDate),
             minDate: DateUtils.dateOnly(widget.minDate),
-            currentDate:
-                DateUtils.dateOnly(widget.currentDate ?? DateTime.now()),
+            currentDate: DateUtils.dateOnly(widget.currentDate ?? DateTime.now()),
             currentDateDecoration: widget.currentDateDecoration,
             currentDateTextStyle: widget.currentDateTextStyle,
             disabledCellsDecoration: widget.disabledCellsDecoration,
@@ -404,7 +415,7 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
                 date: selectedMonth,
               );
               setState(() {
-                _diplayedDate = clampedSelectedMonth;
+                _displayedDate = clampedSelectedMonth;
                 _pickerType = PickerType.days;
               });
             },
@@ -416,11 +427,10 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
           child: YearsPicker(
             centerLeadingDate: widget.centerLeadingDate,
             selectedDate: null,
-            initialDate: _diplayedDate,
+            initialDate: _displayedDate,
             maxDate: DateUtils.dateOnly(widget.maxDate),
             minDate: DateUtils.dateOnly(widget.minDate),
-            currentDate:
-                DateUtils.dateOnly(widget.currentDate ?? DateTime.now()),
+            currentDate: DateUtils.dateOnly(widget.currentDate ?? DateTime.now()),
             currentDateDecoration: widget.currentDateDecoration,
             currentDateTextStyle: widget.currentDateTextStyle,
             disabledCellsDecoration: widget.disabledCellsDecoration,
@@ -445,7 +455,7 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
                 date: selectedYear,
               );
               setState(() {
-                _diplayedDate = clampedSelectedYear;
+                _displayedDate = clampedSelectedYear;
                 _pickerType = PickerType.months;
               });
             },
