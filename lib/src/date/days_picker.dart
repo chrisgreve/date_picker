@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../shared/device_orientation_builder.dart';
+import '../shared/header.dart';
 import '../shared/types.dart';
 import '../shared/utils.dart';
 import 'days_view.dart';
-import '../shared/header.dart';
 import 'show_date_picker_dialog.dart';
 
 /// Displays a grid of days for a given month and allows the user to select a
